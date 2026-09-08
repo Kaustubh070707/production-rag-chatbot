@@ -1,0 +1,2 @@
+{"question": "What is our refund policy?", "expected_doc_id": "policy.pdf#chunk-3", "answerable": true}
+{"question": "How do I reset my API key?", "expected_doc_id": "docs.md#chunk-7", "answerable": true}
