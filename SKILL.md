@@ -8,25 +8,20 @@ repo:
 live:
 ---
 # 1. What this project is
-<Two sentences. Explain it to a non-technical friend, then to an engineer.>
-Non-technical: A chatbot that answers only from my documents with citations.
-Engineer: FastAPI RAG service with ingestion, hybrid BM25 + vector retrieval, cross-encoder re-rank, pgvector store.
+Non-technical: I have uploaded my Ancient Science notes and ask it questions related to it, it shows answer and file name
+Engineer: FastAPI service, split md file into 500-char pieces , find top 3 by word match
 
 # 2. Problem it solves
-<Why would anyone run this? If the honest answer is "it was a tutorial", change the project until there is a real answer.>
-Answers questions strictly from supplied corpus (PDF/DOCX/HTML/MD) with refusal when context insufficient.
+I waste a lot of time(~20 minutes) finding the details e.g. Aryabhata vs Brahmagupta details in 591-line notes , this project solves this problem and return the result in < 1s and refuses if nothing exist
 
 # 3. Architecture
-<Paste an ASCII or image diagram. Every box must be something you can explain.>
-```
-[Docs] -> [Ingest + Chunk + Embed] -> [pgvector + BM25]
-[User Q] -> [Hybrid Retrieve top-k] -> [Re-rank] -> [LLM + strict prompt] -> [Answer + citations]
-```
+[notes.md] -> [chunk 500/50] -> [list in memory]
+[query] -> [word-match top-3] -> [answer + citations]
+
 Components:
-- ingest -> parse + chunk with overlap -> chose chunk size after eval, not before
-- retriever -> hybrid vector + BM25 -> vector alone misses keywords
-- api -> FastAPI + background worker for parsing/embedding -> uploads stay fast
-- eval -> 30 labelled Qs, hit-rate + faithfulness -> proves quality
+- chunk 500/50 -> splits notes.md to 500-char pieces -> chose 500 not 100 (loses context) or 2000 (dilutes match), will prove with eval
+- list in memory -> holds ~54 chunks in Python list -> chose memory not Postgres/pgvector yet because small + zero setup, move when grows
+- word-match top-3 -> scores by common words ignoring who/was/the -> chose this not embeddings because no key needed for baseline
 
 # 4. Key decisions and trade-offs
 | Decision | Options I considered | What I chose | Why | What I gave up |
