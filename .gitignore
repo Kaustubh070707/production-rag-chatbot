@@ -2,3 +2,7 @@ __pycache__/
 .venv/
 .env
 *.pyc
+# local eval runners - keep questions.jsonl tracked
+eval/run_eval.py
+eval/run_eval_bm25.py
+eval/run_chunk_compare.py
