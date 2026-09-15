@@ -9,6 +9,9 @@ def chunk_text(text,size=500,overlap=50)->list[str]:
     if not text:
         return []
 
+    if len(text)<size:
+        return [text]
+
     step = size - overlap
 
     n_chunks = (len(text)-overlap + step - 1) // step
