@@ -1,2 +1,30 @@
-{"question": "What is our refund policy?", "expected_doc_id": "policy.pdf#chunk-3", "answerable": true}
-{"question": "How do I reset my API key?", "expected_doc_id": "docs.md#chunk-7", "answerable": true}
+{"question": "Who was Aryabhata?", "must_contain": "Aryabhata I", "answerable": true}
+{"question": "What did Suyya build?", "must_contain": "Vitasta", "answerable": true}
+{"question": "What is special about Delhi iron pillar?", "must_contain": "phosphorus", "answerable": true}
+{"question": "Who built Kaveri Anicut?", "must_contain": "Kaveri Anicut", "answerable": true}
+{"question": "What is Guddasetu embankment?", "must_contain": "Guddasetu", "answerable": true}
+{"question": "Why was Ujjain important for astronomy?", "must_contain": "Ujjain", "answerable": true}
+{"question": "What are Nagara Dravida Vesara styles?", "must_contain": "Nagara", "answerable": true}
+{"question": "What does word stupa derive from?", "must_contain": "root stup", "answerable": true}
+{"question": "Where did stupas become ornate with base-terraces?", "must_contain": "Nalanda", "answerable": true}
+{"question": "What is special about Konarak Sun temple?", "must_contain": "Konarak", "answerable": true}
+{"question": "What is Baudhayana known for?", "must_contain": "Baudhayana sequences", "answerable": true}
+{"question": "What did Bhaskaracharya compose?", "must_contain": "Siddhanta Shiromani", "answerable": true}
+{"question": "What is Varahamihira magnum opus?", "must_contain": "Brihat Samhita", "answerable": true}
+{"question": "What is Nagarjuna work on alchemy?", "must_contain": "Rasaratnakara", "answerable": true}
+{"question": "Where was Brahmagupta head?", "must_contain": "Ujjain observatory", "answerable": true}
+{"question": "What lake was formerly Mahapadma?", "must_contain": "Mahapadma", "answerable": true}
+{"question": "Who innovated chain-tank irrigation?", "must_contain": "chain-tank", "answerable": true}
+{"question": "What sine cosine terms did Aryabhata introduce?", "must_contain": "jya", "answerable": true}
+{"question": "When was Jalali calendar devised?", "must_contain": "1073", "answerable": true}
+{"question": "Which regions are known for step wells?", "must_contain": "Gujarat", "answerable": true}
+{"question": "What is refund policy?", "must_contain": "", "answerable": false}
+{"question": "How to reset API key?", "must_contain": "", "answerable": false}
+{"question": "Explain Python list comprehension syntax?", "must_contain": "", "answerable": false}
+{"question": "Who won cricket World Cup 2023?", "must_contain": "", "answerable": false}
+{"question": "When was Taj Mahal built?", "must_contain": "", "answerable": false}
+{"question": "What is machine learning?", "must_contain": "", "answerable": false}
+{"question": "What is iPhone price in India?", "must_contain": "", "answerable": false}
+{"question": "How to file income tax?", "must_contain": "", "answerable": false}
+{"question": "Best pizza in Delhi?", "must_contain": "", "answerable": false}
+{"question": "Explain quantum entanglement?", "must_contain": "", "answerable": false}

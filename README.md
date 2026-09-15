@@ -21,8 +21,15 @@ Most in-demand applied-AI skill. Eval set + chunking comparison + cost tracking 
 ## Results table
 | Stage | Hit-rate | Notes |
 |---|---|---|
-| baseline fixed chunk | TBD | |
-| tuned chunk/overlap | TBD | |
+| baseline 800/80 word-match 5-Q | 4/5 (80%) | `python eval/run_eval.py` |
+| baseline 800/80 word-match 30-Q | 19/30 (63%) | 18/20 answerable PASS, 1/10 refusal PASS; 2 splits across chunk boundary, 9 false-positive overlaps; `python eval/run_eval.py` |
+| chunk 500/50 word-match 30-Q | 18/30 (60%) | 87 chunks, ans 17/20 ref 1/10; smaller loses context; `python eval/run_chunk_compare.py` |
+| chunk 800/80 word-match 30-Q | 19/30 (63%) | 54 chunks, ans 18/20 ref 1/10; current pick |
+| chunk 1200/100 word-match 30-Q | 19/30 (63%) | 36 chunks, ans 18/20 ref 1/10; larger dilutes, same score fewer chunks |
+| BM25 800/80 MIN=0.5 30-Q | 20/30 (67%) | ans 19/20 ref 1/10; `python eval/run_eval_bm25.py` |
+| BM25 800/80 MIN=1.0 30-Q | 21/30 (70%) | ans 19/20 ref 2/10; small stopwords set |
+| BM25 800/80 expanded-stopwords MIN=1.0 30-Q | 25/30 (83%) | ans 20/20 ref 5/10; current best, `python eval/run_eval_bm25.py` |
+| BM25 800/80 MIN=1.5 30-Q | 21/30 (70%) | ans 19/20 ref 2/10; raising further kills nothing more |
 | hybrid + re-rank | TBD target 89% | |
 
 ## Run
