@@ -59,6 +59,8 @@ Components:
    Fix: Not fixed yet - documented as known failure. Options are larger stopwords, heading filtering, or embeddings that understand key-words versus API-key are different meanings.
    Lesson: Keyword matching cannot tell word sense apart. This is exactly why the vault says the next step is embeddings and hybrid search, which I will add after this baseline.
 
+Full code-level history of all 16 bugs from chunking to BM25 (one-line bodies, loop-variable mutation, dead branches, float64 casts, wiring swaps) is kept in `DEBUG_LOG.md` at the repo root, deliberately outside `docs/` so it never pollutes retrieval.
+
 # 8. What I would do differently at 100x scale
 - I would move chunks from Python list to pgvector with metadata filtering by source and date, plus a background worker for parsing so uploads stay fast, because in-memory reload on every request will not survive restarts or large corpora.
 - I would add embeddings alongside BM25 for hybrid retrieval plus a cross-encoder re-rank, because keyword BM25 still fails 5 of 10 refusals on meaning mismatches like API key versus Key Words.
