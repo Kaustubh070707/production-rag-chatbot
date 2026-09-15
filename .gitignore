@@ -6,3 +6,4 @@ __pycache__/
 eval/run_eval.py
 eval/run_eval_bm25.py
 eval/run_chunk_compare.py
+eval/vectors_cache.json
