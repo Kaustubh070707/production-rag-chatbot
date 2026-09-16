@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+eval/vectors_cache.json
+.git/
+.pytest_cache/
