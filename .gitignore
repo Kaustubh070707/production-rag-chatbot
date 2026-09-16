@@ -2,13 +2,13 @@ __pycache__/
 .venv/
 .env
 *.pyc
-# local eval runners - keep questions.jsonl tracked
-eval/run_eval.py
-eval/run_eval_bm25.py
-eval/run_chunk_compare.py
-eval/run_eval_vector.py
-eval/run_eval_hybrid.py
-eval/run_faithfulness.py
+# repeatable eval runners - public (need NVIDIA_API_KEY for dense/llm runs)
+# eval/run_eval.py
+# eval/run_eval_bm25.py
+# eval/run_chunk_compare.py
+# eval/run_eval_vector.py
+# eval/run_eval_hybrid.py
+# eval/run_faithfulness.py
 eval/vectors_cache.json
 # private build log - local only, never public
 README.dev.md
