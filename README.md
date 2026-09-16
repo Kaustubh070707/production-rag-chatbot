@@ -6,7 +6,7 @@ Built with FastAPI, hybrid BM25 + dense retrieval, and grounded LLM answers. Liv
 
 ## Demo
 
-- **Live:** <paste Railway URL here>
+- **Live:** https://production-rag-chatbot-production.up.railway.app (try `/health`, then `/docs` → `POST /ask`)
 - **Demo video:** <paste 2-min video link here>
 - Try in Swagger: open `/docs` → `POST /ask`
 

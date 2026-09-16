@@ -5,7 +5,7 @@ level: beginner-intermediate
 started: 2026-09-09
 shipped:
 repo:
-live:
+live: https://production-rag-chatbot-production.up.railway.app
 ---
 # 1. What this project is
 Non-technical: I have uploaded my Ancient Science notes and ask it questions related to it, it shows answer and file name
