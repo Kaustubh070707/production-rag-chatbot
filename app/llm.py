@@ -9,10 +9,12 @@ DEFAULT_LLM_MODEL = "nvidia/nemotron-3-super-120b-a12b"
 
 SYSTEM_PROMPT = (
     "You answer ONLY from the Context below. "
-    "After every fact put [source]. "
+    "End EVERY sentence with the exact source label in square brackets shown in the Context, e.g. [notes.md]. "
     "If the Context lacks the answer, reply exactly: Not found in your documents. "
-    "Never use outside knowledge."
+    "Never use outside knowledge. "
+    "Return ONLY the final answer. No preamble, no reasoning, no meta-commentary."
 )
+
 
 
 def _client() -> OpenAI:
@@ -37,7 +39,7 @@ def generate_answer(query:str,cited:list[tuple[str,str]],metrics:dict | None = N
             {"role":"user","content": _build_user_message(query,cited)}
         ],
         temperature=0.2,
-        max_tokens=768,
+        max_tokens=1024,
         stream=False,
     )
 
