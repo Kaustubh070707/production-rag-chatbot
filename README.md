@@ -31,7 +31,8 @@ Most in-demand applied-AI skill. Eval set + chunking comparison + cost tracking 
 | BM25 800/80 expanded-stopwords MIN=1.0 30-Q | 25/30 (83%) | ans 20/20 ref 5/10; current best sparse, `python eval/run_eval_bm25.py` |
 | dense 800/80 cos MIN=0.3 30-Q | 26/30 (87%) | ans 16/20 ref 10/10; perfect refusal, loses 4 precise-keyword Qs; `python eval/run_eval_vector.py` |
 | dense 800/80 cos MIN=0.4 30-Q | 24/30 (80%) | ans 14/20 ref 10/10 |
-| hybrid a=0.5 MIN=0.85 30-Q | 25/30 (83%) | ans 19/20 ref 6/10; best balance, keeps ans like BM25 + most ref; per-query min-max caps refusal (refund scores 0.75+); `python eval/run_eval_hybrid.py` |
+| hybrid a=0.5 MIN=0.85 30-Q | 25/30 (83%) | ans 19/20 ref 6/10; per-query min-max caps refusal (refund scores 0.75+); `python eval/run_eval_hybrid.py` |
+| hybrid a=0.5 raw-gate OR (dense0.2/bm25 1.0) + MIN=0.85 30-Q | 29/30 (97%) | ans 19/20 ref 10/10; only Brahmagupta split-phrase FAIL; current best |
 | BM25 800/80 MIN=1.5 30-Q | 21/30 (70%) | ans 19/20 ref 2/10; raising further kills nothing more |
 | hybrid + re-rank | TBD target 89% | |
 

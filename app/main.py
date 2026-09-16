@@ -1,12 +1,14 @@
 from fastapi import FastAPI, UploadFile
 from pydantic import BaseModel
 from pathlib import Path
-from app import chunking,retriever,bm25_retriever
+from app import chunking,retriever,bm25_retriever,hybrid
 
 app = FastAPI(title="Production RAG Chatbot - D1")
 CHUNK_SIZE = 800
 CHUNK_OVERLAP = 80
-MIN_SCORE = 1.0
+MIN_SCORE = 0.85
+RAW_DENSE_FLOOR = 0.2
+RAW_BM25_FLOOR = 1.0
 DOCS_DIR = Path("docs")
 
 class AskRequest(BaseModel):
@@ -34,10 +36,17 @@ def ask(req: AskRequest):
 
     text = [chunk for _,chunk in pairs]
     # results = retriever.retrieve(req.query,text,top_k=max(req.top_k,0))
-    results = bm25_retriever.bm25_retrieve(req.query,text,top_k=max(req.top_k,0))
-
+    # results = bm25_retriever.bm25_retrieve(req.query,text,top_k=max(req.top_k,0))
+    results,raw_dense,raw_bm25 = hybrid.hybrid_retrieve_with_raw(
+        req.query,text,top_k=max(req.top_k,0)
+    )
     # if not results or results[0][1] == 0.0:
     #     return {"query": req.query, "answer": "Not found in your documents.", "citations": []}
+
+    if raw_dense < RAW_DENSE_FLOOR or raw_bm25 < RAW_BM25_FLOOR:
+        return {"query": req.query, "answer": "Not found in your documents.", "citations": []}
+
+
 
     if not results or results[0][1] < MIN_SCORE:
         return {"query":req.query,"answer":"Not found in your documents.", "citations":[]}

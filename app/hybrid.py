@@ -11,9 +11,9 @@ def _normalize(scores:list[float])->list[float]:
 
 
 
-def hybrid_retrieve(query: str, chunks: list[str], top_k: int = 3, alpha: float = 0.5) -> list[tuple[str, float]]:
+def hybrid_retrieve_with_raw(query: str, chunks: list[str], top_k: int = 3, alpha: float = 0.5) -> tuple[list[tuple[str, float]],float,float]:
     if not query.strip() or not chunks:
-        return []
+        return ([],0.0,0.0)
     if not 0.0 <= alpha <= 1.0:
         raise ValueError(f"alpha must be in [0,1]; got {alpha}")
 
@@ -29,9 +29,16 @@ def hybrid_retrieve(query: str, chunks: list[str], top_k: int = 3, alpha: float 
     bm25_scores = [bm25_map.get(c,0.0) for c in chunks]
     dense_scores = [dense_map.get(c,0.0) for c in chunks]
 
+    raw_dense_best = max(dense_scores) if dense_scores else 0.0
+    raw_bm25_best = max(bm25_scores) if bm25_scores else 0.0
+
     bm25_n = _normalize(bm25_scores)
     dense_n = _normalize(dense_scores)
 
     hybrid_scores = [alpha * d + (1-alpha)*b for  d,b in zip(dense_n,bm25_n)]
     ranked = sorted(zip(chunks,hybrid_scores), key=lambda t:t[1],reverse=True)
-    return ranked[:top_k]
+    return (ranked[:top_k],raw_dense_best,raw_bm25_best)
+
+def hybrid_retrieve(query:str,chunks:list[str],top_k:int = 3 , alpha:float = 0.5)->list[tuple[str,float]]:
+    ranked,_,_ = hybrid_retrieve_with_raw(query,chunks,top_k,alpha)
+    return ranked
