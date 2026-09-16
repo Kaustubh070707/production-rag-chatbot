@@ -10,3 +10,5 @@ eval/run_eval_vector.py
 eval/run_eval_hybrid.py
 eval/run_faithfulness.py
 eval/vectors_cache.json
+# private build log - local only, never public
+README.dev.md
