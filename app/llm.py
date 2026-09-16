@@ -5,7 +5,7 @@ import os
 load_dotenv()
 
 NVIDIA_BASE_URL = os.getenv("NVIDIA_BASE_URL", "https://integrate.api.nvidia.com/v1")
-DEFAULT_LLM_MODEL = "nvidia/nemotron-3-super-120b-a12b"
+DEFAULT_LLM_MODEL = "openai/gpt-oss-20b"
 
 SYSTEM_PROMPT = (
     "You answer ONLY from the Context below. "

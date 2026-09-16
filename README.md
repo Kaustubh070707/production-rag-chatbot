@@ -33,6 +33,8 @@ Most in-demand applied-AI skill. Eval set + chunking comparison + cost tracking 
 | dense 800/80 cos MIN=0.4 30-Q | 24/30 (80%) | ans 14/20 ref 10/10 |
 | hybrid a=0.5 MIN=0.85 30-Q | 25/30 (83%) | ans 19/20 ref 6/10; per-query min-max caps refusal (refund scores 0.75+); `python eval/run_eval_hybrid.py` |
 | hybrid a=0.5 raw-gate OR (dense0.2/bm25 1.0) + MIN=0.85 30-Q | 29/30 (97%) | ans 19/20 ref 10/10; only Brahmagupta split-phrase FAIL; current best |
+| llm grounded 5-sample faithfulness | 5/5 grounded, 4/5 clean style | 1/5 preamble leak (Aryabhata run: reasoning preamble + 13 tag-stuffed cites + 1024 cap hit); others 1-2 cites clean; avg ~1024 tokens/Q (prompt ~525 + completion ~499); `python eval/run_faithfulness.py` |
+| llm gpt-oss-20b Aryabhata probe | grounded, 540+310 tokens, paragraph cites | 1 trailing [notes.md] for 3 sentences (not per-sentence); no preamble, no cap hit; cheapest clean run |
 | BM25 800/80 MIN=1.5 30-Q | 21/30 (70%) | ans 19/20 ref 2/10; raising further kills nothing more |
 | hybrid + re-rank | TBD target 89% | |
 
