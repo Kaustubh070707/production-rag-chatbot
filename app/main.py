@@ -1,7 +1,8 @@
 from fastapi import FastAPI, UploadFile
 from pydantic import BaseModel
 from pathlib import Path
-from app import chunking,retriever,bm25_retriever,hybrid
+from app import chunking,retriever,bm25_retriever,hybrid,llm
+import logging,time
 
 app = FastAPI(title="Production RAG Chatbot - D1")
 CHUNK_SIZE = 800
@@ -57,11 +58,39 @@ def ask(req: AskRequest):
         {"source":source_by_chunk[chunk],"score":score,"chunk":chunk[:300]}
         for chunk,score in results
     ]
-    top_chunk,top_score = results[0]
-    top_source = source_by_chunk[top_chunk]
-    answer = f"Top match from {top_source}: {top_chunk[:500]}"
+    # top_chunk,top_score = results[0]
+    # top_source = source_by_chunk[top_chunk]
+    # answer = f"Top match from {top_source}: {top_chunk[:500]}"
 
-    return {"query":req.query, "answer":answer,"citations":citations}
+    # return {"query":req.query, "answer":answer,"citations":citations}
+
+
+    cited = [(source_by_chunk[chunk],chunk) for chunk,_ in results[:2]]
+    metrics:dict[str,int] = {}
+    t0 = time.time()
+
+    try:
+        answer = llm.generate_answer(req.query,cited,metrics)
+        llm_latency_ms = round((time.time()-t0)*1000,1)
+    except Exception as e:
+        logging.exception("LLM failed: falling back to extractive %s", e)
+        top_chunk, _ = results[0]
+        answer = f"Top match from {source_by_chunk[top_chunk]}: {top_chunk[:500]}"
+        llm_latency_ms = None
+
+    if "prompt_tokens" in metrics and "completion_tokens" in metrics:
+        llm_tokens = metrics["prompt_tokens"] + metrics["completion_tokens"]
+    else:
+        llm_tokens = "TBD"
+
+    return {
+        "query": req.query,
+        "answer": answer,
+        "citations":citations,
+        "llm_latency_ms":llm_latency_ms,
+        "llm_tokens":llm_tokens,
+    }
+
 
     # TODO Step 5: hybrid + re-rank, Step 6: citations + refusal
 
