@@ -1,16 +1,21 @@
-from fastapi import FastAPI, UploadFile
+from fastapi import FastAPI, UploadFile, Request, HTTPException
 from pydantic import BaseModel
 from pathlib import Path
 from app import chunking,retriever,bm25_retriever,hybrid,llm
-import logging,time
+import logging,time,os
+from collections import defaultdict, deque
 
-app = FastAPI(title="Production RAG Chatbot - D1")
+app = FastAPI(title="RAG Chatbot — Hybrid Retrieval Demo")
 CHUNK_SIZE = 800
 CHUNK_OVERLAP = 80
 MIN_SCORE = 0.85
 RAW_DENSE_FLOOR = 0.2
 RAW_BM25_FLOOR = 1.0
 DOCS_DIR = Path("docs")
+# simple in-memory rate limit: 20 requests per 60s per IP on /ask
+_RATE_LIMIT = int(os.getenv("RATE_LIMIT_PER_MINUTE", "20"))
+_WINDOW = 60
+_hits: dict[str, deque] = defaultdict(deque)
 
 class AskRequest(BaseModel):
     query: str
@@ -30,7 +35,16 @@ def health():
     return {"status": "ok"}
 
 @app.post("/ask")
-def ask(req: AskRequest):
+def ask(req: AskRequest, request: Request):
+    # rate limit by IP
+    ip = request.client.host if request.client else "unknown"
+    now = time.time()
+    dq = _hits[ip]
+    while dq and now - dq[0] > _WINDOW:
+        dq.popleft()
+    if len(dq) >= _RATE_LIMIT:
+        raise HTTPException(status_code=429, detail=f"Rate limit: {_RATE_LIMIT} requests per minute")
+    dq.append(now)
     pairs = load_documents()
     if not pairs:
         return {"query": req.query,"answer": "No documents loaded.","citations":[]}
@@ -95,7 +109,15 @@ def ask(req: AskRequest):
     # TODO Step 5: hybrid + re-rank, Step 6: citations + refusal
 
 @app.post("/ingest")
-async def ingest(file: UploadFile):
+async def ingest(file: UploadFile, request: Request):
+    if os.getenv("DISABLE_INGEST", "false").lower() == "true":
+        raise HTTPException(status_code=503, detail="Ingest disabled on demo deployment — run locally to upload")
+    # optional shared-secret auth for live: set RAG_API_KEY on server, clients send X-API-Key
+    expected = os.getenv("RAG_API_KEY")
+    if expected:
+        provided = request.headers.get("x-api-key")
+        if provided != expected:
+            raise HTTPException(status_code=401, detail="Missing or invalid X-API-Key")
     # TODO: parse PDF/DOCX/HTML/MD -> chunk -> embed -> pgvector
     # Move to background worker (Celery/BullMQ/RQ) to keep upload <300ms
     return {"filename": file.filename, "status": "queued"}

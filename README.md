@@ -2,13 +2,12 @@
 
 > Demo RAG service that answers strictly from your own documents — with citations, and refusal when the answer isn't there. Built to show retrieval quality with numbers, not just a chatbot UI.
 
-A FastAPI service with hybrid BM25 + dense retrieval and grounded LLM answers. Demo corpus is `docs/notes.md` (591 lines, study excerpt — not my original writing; replace it with your own documents). Live demo needs an NVIDIA key on the server side, not in the browser.
+A FastAPI service with hybrid BM25 + dense retrieval and grounded LLM answers. Demo corpus is `docs/notes.md` (591 lines, study excerpt from a textbook — not my original writing; see Corpus note below).
 
 ## Demo
 
 - **Live:** https://production-rag-chatbot-production.up.railway.app (try `/health`, then `/docs` → `POST /ask`)
 - **Demo video:** https://youtu.be/i_eClL5WwuQ (2 min: live health, cited answer, refusal)
-- **Repo:** https://github.com/Kaustubh070707/production-rag-chatbot
 
 Try in Swagger: open `/docs` → `POST /ask`
 
@@ -19,30 +18,30 @@ Try in Swagger: open `/docs` → `POST /ask`
 }
 ```
 
-Real response from the live service (untrimmed, scores are hybrid normalized scores — 1.0 is the per-query rescaled top, see note below):
+Real response from the live service on 2026-09-25 (warm, no edits — chunks are truncated to 300 characters by the API, scores are hybrid normalized where 1.0 is the per-query rescaled top):
 
 ```json
 {
   "query": "Who was Aryabhata?",
-  "answer": "Aryabhata I (476 CE) was the first astronomer who tackled the problems of new astronomy. [notes.md]\nHe invented a system of expressing numbers with consonants and vowels. [notes.md]\nHe laid the foundations of scientific Indian astronomy in 499 CE. [notes.md]\nHe taught astronomy to pupils who included Pandurangasvamin, Latadeva, and Nihsanka. [notes.md]\nHe was from Kusumapura (Pataliputra or Patna). [notes.md]",
+  "answer": "Aryabhata I (476 CE) was the first astronomer who tackled the problems of new astronomy. [notes.md] Aryabhata I invented a system of expressing numbers with consonants and vowels based on the decimal place value principle. [notes.md] He laid the foundations of scientific Indian astronomy in 499 CE. [notes.md] He taught astronomy to pupils such as Pandurangasvamin, Latadeva, and Nihsanka. [notes.md]",
   "citations": [
     {
       "source": "notes.md",
       "score": 1.0,
-      "chunk": "Aryabhata I (476 CE) was the first astronomer who tackled the problems of new\nastronomy. He invented a system of expressing numbers with the help of\nconsonants and vowels, based again on the decimal place value principle. The\nsystem was used by Bhaskara I (574 CE) and Aryabhata II (950 CE), and app"
+      "chunk": "\nAryabhata I (476 CE) was the first astronomer who tackled the problems of new\nastronomy. He invented a system of expressing numbers with the help of\nconsonants and vowels, based again on the decimal place value principle. The\nsystem was used by Bhaskara I (574 CE) and Aryabhata II (950 CE), and app"
     },
     {
       "source": "notes.md",
-      "score": 0.881,
+      "score": 0.8850633071903663,
       "chunk": "lendar than in the\nGregorian calendar.\nCultural Developments\nIndia's first satellite Aryabhata and the lunar crater Aryabhata were named\nto honour this great Indian scientist. Further, the Aryabhatta Research\nInstitute of Observational Sciences (ARIES) as a centre for research and\ntraining in astrop"
     }
   ],
-  "llm_latency_ms": 1800,
-  "llm_tokens": 310
+  "llm_latency_ms": 13559.9,
+  "llm_tokens": 899
 }
 ```
 
-Scores: `1.0` is the best chunk after per-query min-max rescaling, so a weak question can still show 1.0 for its top — raw scores (dense cosine, BM25) are the refusal signal. See “How refusal works” below.
+Chunks above are truncated to 300 characters by the API (`chunk[:300]` in `app/main.py:58`); the full chunk is longer. Scores are normalized per-query, so `1.0` is the best for that query — raw dense/BM25 scores are the refusal signal. See “How refusal works” below.
 
 Unanswerable questions return `Not found in your documents.` with empty citations and no LLM call — tested as **refused 10/10 unanswerable test questions on the tuning set**, not “no hallucinations” in general.
 
@@ -70,16 +69,16 @@ Tuning set = 30 questions I wrote and tuned cutoffs/stopwords on (20 answerable 
 | Held-out 12 questions (never tuned on) | 12/12 (100%) — 7/7 answerable, 5/5 refusals | New phrasings and trick refusals written after freezing thresholds. `python eval/run_eval_heldout.py` |
 | Grounded answers faithfulness (5 samples, strict prompt) | 5/5 grounded, 5/5 clean per-sentence cites | No preamble leaks after strict prompt. `python eval/run_faithfulness.py` |
 
-Full 16-row lab notebook (all chunk sizes, cutoffs, intermediate hybrids) is in `docs/EVAL_LOG.md` — the table above is the story.
+Full 16-row lab notebook (all chunk sizes, cutoffs, intermediate hybrids) is in `eval/EVAL_LOG.md` — the table above is the story.
 
 **Reproducibility**
 
 ```bash
-# retrieval (tuning set)
+# retrieval (tuning set) — needs no key for BM25; dense/hybrid need NVIDIA_API_KEY in .env
 python eval/run_eval.py
 python eval/run_eval_bm25.py
-python eval/run_eval_hybrid.py   # current best 29/30
-python eval/run_eval_heldout.py  # held-out 10/12
+python eval/run_eval_hybrid.py   # current best 29/30 tuning
+python eval/run_eval_heldout.py  # held-out 12/12 — thresholds frozen before this file was added (see git log 77862bc -> 0979bc9)
 
 # image sizes
 docker build -f Dockerfile.naive -t rag:naive . && docker images rag:naive
@@ -131,11 +130,11 @@ Next: auth on live, persistent pgvector, PDF ingest, repeat-query cache, cross-e
 
 ```
 app/            FastAPI service (chunking, BM25, dense, hybrid, LLM)
-docs/           corpus (your documents go here) + EVAL_LOG.md full table
-eval/           30-question tuning set (questions.jsonl) + held-out set + runners
+docs/           corpus (your documents go here)
+eval/           30-question tuning set (questions.jsonl) + held-out set + runners + EVAL_LOG.md full table
 Dockerfile      multi-stage slim (~478MB)
 Dockerfile.naive  unoptimized baseline (~1.9GB)
-SKILL.md        engineering log — decisions, numbers, failures (kept for transparency; interview answers are rehearsed from measured numbers)
+SKILL.md        engineering log — decisions, numbers, failures
 DEBUG_LOG.md    full code-level debug history (kept outside docs/ so it never pollutes retrieval)
 ```
 
