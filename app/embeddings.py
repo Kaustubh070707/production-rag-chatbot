@@ -1,6 +1,7 @@
-from openai import OpenAI
-from dotenv import load_dotenv
 import os
+
+from dotenv import load_dotenv
+from openai import OpenAI
 
 load_dotenv()
 NVIDIA_BASE_URL = os.getenv("NVIDIA_BASE_URL","https://integrate.api.nvidia.com/v1")

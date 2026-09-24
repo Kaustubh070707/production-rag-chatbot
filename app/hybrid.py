@@ -1,6 +1,7 @@
 from app.bm25_retriever import bm25_retrieve
 from app.vector_retriever import vector_retrieve
 
+
 def _normalize(scores:list[float])->list[float]:
     if not scores:
         return []

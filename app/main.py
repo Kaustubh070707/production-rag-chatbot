@@ -1,12 +1,17 @@
-from fastapi import FastAPI, UploadFile, Request, HTTPException
-from pydantic import BaseModel
-from pathlib import Path
-from app import chunking,retriever,bm25_retriever,hybrid,llm
-import logging,time,os
+import logging
+import os
+import time
 from collections import defaultdict, deque
+from pathlib import Path
 
-from fastapi.staticfiles import StaticFiles
+from fastapi import FastAPI, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
+
+logger = logging.getLogger(__name__)
+
+from app import chunking, hybrid, llm
 
 app = FastAPI(title="RAG Chatbot — Hybrid Retrieval Demo")
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -102,8 +107,8 @@ def ask(req: AskRequest, request: Request):
     try:
         answer = llm.generate_answer(req.query,cited,metrics)
         llm_latency_ms = round((time.time()-t0)*1000,1)
-    except Exception as e:
-        logging.exception("LLM failed: falling back to extractive %s", e)
+    except Exception:
+        logger.exception("LLM failed: falling back to extractive")
         top_chunk, _ = results[0]
         answer = f"Top match from {source_by_chunk[top_chunk]}: {top_chunk[:500]}"
         llm_latency_ms = None

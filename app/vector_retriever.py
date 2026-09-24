@@ -1,8 +1,9 @@
-from app.embeddings import embed_texts
-from pathlib import Path
 import hashlib
 import json
 import math
+from pathlib import Path
+
+from app.embeddings import embed_texts
 
 MODEL = "nvidia/llama-nemotron-embed-vl-1b-v2"
 DIM = 2048
