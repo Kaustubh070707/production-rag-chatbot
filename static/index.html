@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RAG Chatbot — Hybrid Retrieval Demo</title>
+<style>
+:root{--bg:#0b0e14;--card:#111827;--muted:#9ca3af;--acc:#38bdf8;--ok:#34d399;--err:#f87171}
+*{box-sizing:border-box} body{margin:0;font:14px/1.5 system-ui,Segoe UI,Roboto,Arial;background:var(--bg);color:#e5e7eb}
+header{padding:20px;max-width:900px;margin:0 auto}
+h1{margin:0 0 6px;font-size:20px} h1 span{color:var(--acc)} p.muted{color:var(--muted);margin:4px 0}
+.card{background:var(--card);border:1px solid #1f2937;border-radius:12px;padding:16px;margin:14px 0}
+label{font-weight:600;display:block;margin:8px 0 6px}
+input,textarea,select{width:100%;padding:10px 12px;border-radius:8px;border:1px solid #374151;background:#0b1220;color:#e5e7eb}
+button{padding:10px 14px;border-radius:8px;border:0;background:var(--acc);color:#0b0e14;font-weight:700;cursor:pointer}
+button:disabled{opacity:.6;cursor:not-allowed}
+button.ghost{background:#1f2937;color:#e5e7eb}
+.grid{display:grid;gap:14px}
+@media(min-width:800px){.grid{grid-template-columns:1fr 1fr}}
+pre{white-space:pre-wrap;word-break:break-word;background:#0b1220;border:1px solid #1f2937;border-radius:8px;padding:12px;overflow:auto}
+.badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;border:1px solid #1f2937;color:var(--muted)}
+.cite{border-left:3px solid var(--acc);padding:6px 10px;margin:8px 0;background:#0b1220;border-radius:6px}
+.mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px}
+.ok{color:var(--ok)} .err{color:var(--err)}
+</style>
+<header>
+  <h1>RAG Chatbot — <span>Hybrid Retrieval Demo</span></h1>
+  <p class="muted">Ask only from <code>docs/notes.md</code> (synthetic demo corpus). Answers cite the source and refuse when the answer isn't there. Live rate-limited to 20/min per IP.</p>
+  <p class="muted"><a href="/docs" style="color:var(--acc)">API docs</a> · <a href="https://github.com/Kaustubh070707/production-rag-chatbot" style="color:var(--acc)">GitHub</a> · <a href="https://youtu.be/i_eClL5WwuQ" style="color:var(--acc)">Demo video</a> <span class="badge">29/30 tuning · 12/12 held-out</span></p>
+</header>
+<main style="max-width:900px;margin:0 auto;padding:0 20px 20px">
+  <div class="card">
+    <label for="q">Question</label>
+    <textarea id="q" rows="2" placeholder="Who was Aryabhata?">Who was Aryabhata?</textarea>
+    <div style="display:flex;gap:10px;align-items:center;margin-top:10px">
+      <label for="k" style="margin:0">top_k</label>
+      <select id="k" style="width:90px"><option>2</option><option>5</option></select>
+      <button id="askBtn" onclick="ask()">Ask</button>
+      <span id="meta" class="mono muted"></span>
+    </div>
+    <div id="status" class="mono" style="margin-top:10px"></div>
+  </div>
+
+  <div id="answerCard" class="card" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center"><strong>Answer</strong> <span id="lat" class="mono muted"></span></div>
+    <div id="answer" style="margin-top:8px"></div>
+    <div id="cites" style="margin-top:10px"></div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <strong>Try these</strong>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">
+        <button class="ghost" onclick="fill('Who was Aryabhata?')">Aryabhata</button>
+        <button class="ghost" onclick="fill('What did Suyya build?')">Suyya</button>
+        <button class="ghost" onclick="fill('What is special about Delhi iron pillar?')">Iron pillar</button>
+        <button class="ghost" onclick="fill('What is refund policy?')">Refund (refuse)</button>
+      </div>
+      <p class="mono muted" style="margin-top:10px">Refused questions return <code>Not found in your documents.</code> with empty citations — no LLM call, no cost.</p>
+    </div>
+    <div class="card">
+      <strong>Ingest</strong>
+      <p class="muted" style="margin:6px 0">Disabled on the live demo. Run locally to upload your own documents.</p>
+      <input type="file" id="file" disabled>
+      <button class="ghost" onclick="ingestInfo()" style="margin-top:8px;width:100%">Why disabled?</button>
+      <div id="ingMsg" class="mono" style="margin-top:8px"></div>
+      <pre class="mono" style="margin-top:8px">DISABLE_INGEST=true on Railway
+Run locally:
+  uvicorn app.main:app --reload
+  curl -X POST -F "file=@your.md" http://localhost:8000/ingest</pre>
+    </div>
+  </div>
+
+  <div class="card mono" style="font-size:12px">
+    <strong>How refusal works</strong> — raw dense &lt;0.2 or raw BM25 &lt;1.0 → refuse before ranking; survivors need hybrid ≥0.85. Per-query rescaling makes ranking fair but erases absolute strength — raw gates keep the no-match signal.
+  </div>
+</main>
+<script>
+function fill(t){ document.getElementById('q').value=t; }
+function ingestInfo(){
+  const el=document.getElementById('ingMsg');
+  el.innerHTML='<span class="ok">Ingest is disabled on the demo deployment to prevent spam, corpus pollution, and runaway embedding costs.</span> Run the service locally (see <code>README.md → Run it</code>) and POST to <code>/ingest</code> there.';
+  el.scrollIntoView({behavior:'smooth'});
+}
+async function ask(){
+  const q=document.getElementById('q').value.trim();
+  const k=parseInt(document.getElementById('k').value,10);
+  const btn=document.getElementById('askBtn'), status=document.getElementById('status'), meta=document.getElementById('meta');
+  if(!q){ status.innerHTML='<span class="err">Enter a question</span>'; return; }
+  btn.disabled=true; status.textContent='Asking…'; meta.textContent='';
+  try{
+    const r=await fetch('/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:q, top_k:k})});
+    const j=await r.json();
+    if(!r.ok){ status.innerHTML='<span class="err">'+(j.detail||r.statusText)+'</span>'; btn.disabled=false; return; }
+    status.textContent=''; meta.textContent=(j.llm_tokens!=='TBD' ? j.llm_tokens+' tokens · ' : '') + (j.llm_latency_ms ? j.llm_latency_ms+' ms' : '');
+    const ansCard=document.getElementById('answerCard'); ansCard.style.display='block';
+    document.getElementById('answer').innerHTML = (j.answer||'').replace(/\n/g,'<br>') + (j.answer==='Not found in your documents.' ? ' <span class="badge">refused</span>' : '');
+    document.getElementById('lat').textContent = j.llm_latency_ms ? `latency ${j.llm_latency_ms} ms · tokens ${j.llm_tokens}` : '';
+    const cts=document.getElementById('cites'); cts.innerHTML='';
+    if(j.citations && j.citations.length){
+      j.citations.forEach(c=>{
+        const d=document.createElement('div'); d.className='cite';
+        d.innerHTML='<div class="mono">'+c.source+' · score '+Number(c.score).toFixed(3)+'</div><div>'+(c.chunk||'').slice(0,300)+'</div>';
+        cts.appendChild(d);
+      });
+    } else {
+      cts.innerHTML='<div class="mono muted">No citations — refused.</div>';
+    }
+  }catch(e){ status.innerHTML='<span class="err">'+e.message+'</span>'; }
+  finally{ btn.disabled=false; }
+}
+</script>
+</html>

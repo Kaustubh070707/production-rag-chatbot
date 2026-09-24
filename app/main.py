@@ -5,7 +5,11 @@ from app import chunking,retriever,bm25_retriever,hybrid,llm
 import logging,time,os
 from collections import defaultdict, deque
 
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+
 app = FastAPI(title="RAG Chatbot — Hybrid Retrieval Demo")
+app.mount("/static", StaticFiles(directory="static"), name="static")
 CHUNK_SIZE = 800
 CHUNK_OVERLAP = 80
 MIN_SCORE = 0.85
@@ -16,10 +20,13 @@ DOCS_DIR = Path("docs")
 _RATE_LIMIT = int(os.getenv("RATE_LIMIT_PER_MINUTE", "20"))
 _WINDOW = 60
 _hits: dict[str, deque] = defaultdict(deque)
+# repeat-query cache: ~5 min TTL, saves LLM cost on popular questions
+_CACHE_TTL = 300
+_cache: dict[str, tuple[float, dict]] = {}
 
 class AskRequest(BaseModel):
     query: str
-    top_k: int = 5
+    top_k: int = 2
 
 
 def load_documents() -> list[tuple[str,str]]:
@@ -30,12 +37,21 @@ def load_documents() -> list[tuple[str,str]]:
             pairs.append((path.name,chunk))
     return pairs
 
+@app.get("/", include_in_schema=False)
+def root_page():
+    return FileResponse("static/index.html")
+
 @app.get("/health")
 def health():
     return {"status": "ok"}
 
 @app.post("/ask")
 def ask(req: AskRequest, request: Request):
+    # repeat-query cache (before rate limit, saves cost)
+    cache_key = f"{req.query.strip().lower()}::{req.top_k}"
+    cached = _cache.get(cache_key)
+    if cached and time.time() - cached[0] < _CACHE_TTL:
+        return cached[1]
     # rate limit by IP
     ip = request.client.host if request.client else "unknown"
     now = time.time()
@@ -97,13 +113,18 @@ def ask(req: AskRequest, request: Request):
     else:
         llm_tokens = "TBD"
 
-    return {
+    resp = {
         "query": req.query,
         "answer": answer,
         "citations":citations,
         "llm_latency_ms":llm_latency_ms,
         "llm_tokens":llm_tokens,
     }
+    # cache successful answers (including refusals — they are cheap and stable)
+    if len(_cache) > 500:
+        _cache.clear()
+    _cache[cache_key] = (time.time(), resp)
+    return resp
 
 
     # TODO Step 5: hybrid + re-rank, Step 6: citations + refusal

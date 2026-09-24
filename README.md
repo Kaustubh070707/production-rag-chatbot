@@ -43,7 +43,7 @@ Real response from the live service on 2026-09-25 (warm, no edits — chunks are
 
 Chunks above are truncated to 300 characters by the API (`chunk[:300]` in `app/main.py:58`); the full chunk is longer. Scores are normalized per-query, so `1.0` is the best for that query — raw dense/BM25 scores are the refusal signal. See “How refusal works” below.
 
-Unanswerable questions return `Not found in your documents.` with empty citations and no LLM call — tested as **refused 10/10 unanswerable test questions on the tuning set**, not “no hallucinations” in general.
+Unanswerable questions return `Not found in your documents.` with empty citations and no LLM call — tested as **refused 10/10 unanswerable test questions on the tuning set**, not “no hallucinations” in general. Open the frontend at `/` or use `/docs`.
 
 ## Architecture
 
@@ -130,9 +130,11 @@ Next: auth on live, persistent pgvector, PDF ingest, repeat-query cache, cross-e
 
 ```
 app/            FastAPI service (chunking, BM25, dense, hybrid, LLM)
+static/         minimal frontend (ask UI, disabled ingest notice)
 docs/           corpus (your documents go here)
 eval/           30-question tuning set (questions.jsonl) + held-out set + runners + EVAL_LOG.md full table
-Dockerfile      multi-stage slim (~478MB)
+tests/          unit tests (chunking, health, refusal gate)
+Dockerfile      multi-stage slim (~468MB)
 Dockerfile.naive  unoptimized baseline (~1.9GB)
 SKILL.md        engineering log — decisions, numbers, failures
 DEBUG_LOG.md    full code-level debug history (kept outside docs/ so it never pollutes retrieval)
