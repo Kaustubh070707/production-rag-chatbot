@@ -1,0 +1,12 @@
+{"question": "What did Suyya do to the Vitasta river?", "must_contain": "Vitasta", "answerable": true}
+{"question": "Who is credited with draining the Wular lake area?", "must_contain": "Suyya", "answerable": true}
+{"question": "Which pallava structure is mentioned as Kaveri Anicut?", "must_contain": "Kaveri", "answerable": true}
+{"question": "What invention is linked to Guddasetu?", "must_contain": "Guddasetu", "answerable": true}
+{"question": "Which temple style groups are Nagara and Dravida?", "must_contain": "Nagara", "answerable": true}
+{"question": "What architectural element is a stupa's harmika?", "must_contain": "harmika", "answerable": true}
+{"question": "Which scientist wrote Siddhanta Shiromani?", "must_contain": "Bhaskaracharya", "answerable": true}
+{"question": "What is the stock price of Reliance on NSE today?", "must_contain": "", "answerable": false}
+{"question": "Summarize the latest IPL match result", "must_contain": "", "answerable": false}
+{"question": "What is the weather in Mumbai right now?", "must_contain": "", "answerable": false}
+{"question": "Explain how to file GST return step by step", "must_contain": "", "answerable": false}
+{"question": "Recommend a good biryani place near me", "must_contain": "", "answerable": false}
