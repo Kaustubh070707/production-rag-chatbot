@@ -18,26 +18,26 @@ Try in Swagger: open `/docs` → `POST /ask`
 }
 ```
 
-Real response from the live service on 2026-09-25 (warm, no edits — chunks are truncated to 300 characters by the API, scores are hybrid normalized where 1.0 is the per-query rescaled top):
+Real response from the live service after the CC corpus swap (warm, no edits — chunks truncated to 300 characters by the API at `app/main.py:58`, scores hybrid normalized where 1.0 is the per-query rescaled top):
 
 ```json
 {
   "query": "Who was Aryabhata?",
-  "answer": "Aryabhata I (476 CE) was the first astronomer who tackled the problems of new astronomy. [notes.md] Aryabhata I invented a system of expressing numbers with consonants and vowels based on the decimal place value principle. [notes.md] He laid the foundations of scientific Indian astronomy in 499 CE. [notes.md] He taught astronomy to pupils such as Pandurangasvamin, Latadeva, and Nihsanka. [notes.md]",
+  "answer": "Aryabhata I (476-550 CE) was the first major mathematician-astronomer from the classical age of Indian mathematics and astronomy. [aryabhata.md] He authored the Aryabhatiya in 499 CE. [aryabhata.md] He called himself a native of Kusumapura or Pataliputra. [aryabhata.md] He set up an observatory at the Sun temple in Taregana, Bihar. [aryabhata.md] His calendar calculations influenced the Jalali calendar. [aryabhata.md] India's first satellite and a lunar crater were named after him. [aryabhata.md] The Aryabhatta Research Institute of Observational Sciences is named in his honour. [aryabhata.md] His successor Bhaskara I wrote commentaries on his system. [aryabhata.md]",
   "citations": [
     {
-      "source": "notes.md",
+      "source": "aryabhata.md",
       "score": 1.0,
-      "chunk": "\nAryabhata I (476 CE) was the first astronomer who tackled the problems of new\nastronomy. He invented a system of expressing numbers with the help of\nconsonants and vowels, based again on the decimal place value principle. The\nsystem was used by Bhaskara I (574 CE) and Aryabhata II (950 CE), and app"
+      "chunk": "# Aryabhata — Ancient Indian Astronomer\n\nSource: Wikipedia article \"Aryabhata\" (CC BY-SA 4.0, https://en.wikipedia.org/wiki/Aryabhata, retrieved 2026). Condensed extract for demo retrieval corpus.\n\nAryabhata I (476-550 CE) was the first of the major mathematician-astronomers from the classical age o"
     },
     {
-      "source": "notes.md",
-      "score": 0.8850633071903663,
-      "chunk": "lendar than in the\nGregorian calendar.\nCultural Developments\nIndia's first satellite Aryabhata and the lunar crater Aryabhata were named\nto honour this great Indian scientist. Further, the Aryabhatta Research\nInstitute of Observational Sciences (ARIES) as a centre for research and\ntraining in astrop"
+      "source": "aryabhata.md",
+      "score": 0.8400214587548946,
+      "chunk": "s calendar calculations fed the Jalali calendar introduced in 1073 CE by astronomers including Omar Khayyam, still the basis of national calendars in Iran and Afghanistan.\n\nIndia's first satellite Aryabhata and the lunar crater Aryabhata are named in his honour, as is the Aryabhatta Research Institu"
     }
   ],
-  "llm_latency_ms": 13559.9,
-  "llm_tokens": 899
+  "llm_latency_ms": 13619.6,
+  "llm_tokens": 1187
 }
 ```
 
