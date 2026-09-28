@@ -2,7 +2,7 @@
 
 > Demo RAG service that answers strictly from your own documents — with citations, and refusal when the answer isn't there. Built to show retrieval quality with numbers, not just a chatbot UI.
 
-A FastAPI service with hybrid BM25 + dense retrieval and grounded LLM answers. Demo corpus is `docs/notes.md` (591 lines, study excerpt from a textbook — not my original writing; see Corpus note below).
+A FastAPI service with hybrid BM25 + dense retrieval and grounded LLM answers. Demo corpus is `docs/` — three Wikipedia extracts (Aryabhata, Brahmagupta, Iron Pillar of Delhi), CC BY-SA 4.0 with source URLs in each file header. Replace them with your own documents anytime.
 
 ## Demo
 
@@ -48,26 +48,25 @@ Unanswerable questions return `Not found in your documents.` with empty citation
 ## Architecture
 
 ```
-[notes.md] -> [chunk 800/80 -> 54 pieces] -> [BM25 + dense vectors]
+[docs/: 3 Wikipedia files] -> [chunk 800/80 -> 9 pieces] -> [BM25 + dense vectors]
 [query] -> [hybrid retrieve top-2 + raw-score refusal gates] -> [LLM grounded answer + cites]
 ```
 
-- Chunking 800 chars / 80 overlap (compared 500/1200, kept 800: same accuracy, fewer pieces).
-- Hybrid retrieval: BM25 keyword scores plus dense cosine, min-max combined, with raw-score floors that refuse weak matches before ranking.
+- Chunking 800 chars / 80 overlap (compared 500/1200 on the previous corpus, kept 800: same accuracy, fewer pieces).
+- Hybrid retrieval: BM25 keyword scores plus dense cosine, min-max combined, with raw-score floors (dense 0.25 / bm25 0.3, retuned for this corpus) that refuse weak matches before ranking.
 - Grounded generation: strict context-only prompt, per-sentence `[source]` cites, extractive fallback if the LLM fails. Refused questions never reach the LLM.
 
 ## Results (same 30 tuning questions throughout, plus a held-out check)
 
-Tuning set = 30 questions I wrote and tuned cutoffs/stopwords on (20 answerable with exact phrases verified in notes, 10 unanswerable). Held-out = 12 new questions written after freezing all thresholds. Reproduce with commands in the last column.
+Tuning set = 30 questions I wrote and tuned cutoffs/stopwords on (20 answerable with exact phrases verified in corpus, 10 unanswerable). Held-out = 12 new questions written after freezing all thresholds. Corpus is now 3 CC BY-SA Wikipedia extracts (previous 591-line excerpt replaced — see Corpus note). Reproduce with commands in the last column.
 
 | Stage | Hit-rate | Notes |
 |---|---|---|
-| Word-match 800/80 tuning | 19/30 (63%) | First real baseline. Two misses split across chunk boundaries. `python eval/run_eval.py` |
-| BM25 expanded-stopwords MIN=1.0 tuning | 25/30 (83%) | Rare Vitasta now outweighs common India. `python eval/run_eval_bm25.py` |
-| Dense cosine MIN=0.3 tuning | 26/30 (87%) | Refusals 10/10, lost 4 precise-keyword Qs. `python eval/run_eval_vector.py` |
-| Hybrid raw-gate OR (dense 0.2 / bm25 1.0) + MIN 0.85 tuning | **29/30 (97%) tuning** — 19/20 answerable, 10/10 refusals; only Brahmagupta split-phrase miss | Current best on tuning set. `python eval/run_eval_hybrid.py` |
-| Held-out 12 questions (never tuned on) | 12/12 (100%) — 7/7 answerable, 5/5 refusals | New phrasings and trick refusals written after freezing thresholds. `python eval/run_eval_heldout.py` |
-| Grounded answers faithfulness (5 samples, strict prompt) | 5/5 grounded, 5/5 clean per-sentence cites | No preamble leaks after strict prompt. `python eval/run_faithfulness.py` |
+| Word-match 800/80 tuning | 19/30 (63%, previous corpus) | First real baseline on old corpus, kept for history. |
+| BM25 expanded-stopwords tuning | 25/30 (83%, previous corpus) | Rare-terms outweigh common ones. Old corpus numbers. |
+| Hybrid raw-gate OR (dense 0.25 / bm25 0.3) + MIN 0.85 tuning | **27/30 (90%) tuning** — 17/20 answerable, 10/10 refusals | Current corpus. Floors retuned (9-chunk corpus scores lower absolutely). `python eval/run_eval_hybrid.py` + `eval/grid_floors.py` |
+| Held-out 12 questions (never tuned on) | 10/12 (83%) — 5/7 answerable, 5/5 refusals | New phrasings on new corpus, thresholds frozen. `python eval/run_eval_heldout.py` |
+| Grounded answers faithfulness (5 samples, strict prompt) | 5/5 grounded, 5/5 clean per-sentence cites on new corpus | No preamble leaks; per-file cites ([aryabhata.md] etc.); avg ~806 tokens/Q. `python eval/run_faithfulness.py` |
 
 Full 16-row lab notebook (all chunk sizes, cutoffs, intermediate hybrids) is in `eval/EVAL_LOG.md` — the table above is the story.
 
@@ -119,19 +118,19 @@ docker run -p 8000:8000 --env-file .env rag:slim
 
 This is a demo, not production:
 
-- Single-file markdown corpus (`docs/notes.md` excerpt) — replace it with your own; in-memory list + cached vectors, no vector database, reloads on every request.
-- No auth or rate limiting on `/ask` and `/ingest` — the live Railway URL lets anyone hit it and spend the NVIDIA key. Put it behind auth or a rate limit before sharing broadly.
-- No CI on this repo yet — the sibling `cicd-pipeline` repo holds the lint/test/scan/push/deploy pipeline that will ship this service.
-- Tests are the eval harness, not unit tests; ingest is MD-only; no re-rank yet (last miss is a chunk-boundary split that re-rank might fix), no repeat-query cache.
+- CC BY-SA corpus (`docs/aryabhata.md`, `brahmagupta.md`, `iron-pillar.md`, condensed Wikipedia extracts with source URLs) — replace with your own; in-memory list + cached vectors, no vector database, reloads on every request.
+- Rate limiting (20/min/IP) on `/ask`, ingest disabled on live (`503`) — `/ask` still open by design for the demo; put behind auth before any serious sharing.
+- Pipeline wired in-repo (`.github/workflows/pipeline.yml` + `k8s/`, lint/test/scan/push/kind deploy) — same SHA flow as the `cicd-pipeline` sibling.
+- Tests are 4 unit tests plus the eval harness; ingest is MD-only stub; misses are small-corpus ranking limits (9 chunks), not calibration bugs.
 
-Next: auth on live, persistent pgvector, PDF ingest, repeat-query cache, cross-encoder re-rank.
+Next: persistent pgvector, PDF ingest worker, cross-encoder re-rank, repeat-query cache.
 
 ## Repo layout
 
 ```
 app/            FastAPI service (chunking, BM25, dense, hybrid, LLM)
 static/         minimal frontend (ask UI, disabled ingest notice)
-docs/           corpus (your documents go here)
+docs/           CC BY-SA corpus (3 Wikipedia extracts, attributed) — replace with your own
 eval/           30-question tuning set (questions.jsonl) + held-out set + runners + EVAL_LOG.md full table
 tests/          unit tests (chunking, health, refusal gate)
 Dockerfile      multi-stage slim (~468MB)
@@ -142,4 +141,4 @@ DEBUG_LOG.md    full code-level debug history (kept outside docs/ so it never po
 
 ## Corpus note
 
-`docs/notes.md` is a study excerpt used as a demo dataset. It is not my original writing. If you reuse the repo, replace it with your own documents or a public-domain corpus, and verify you have the right to publish any file you put in `docs/`.
+`docs/` holds condensed extracts of three Wikipedia articles (Aryabhata, Brahmagupta, Iron pillar of Delhi), CC BY-SA 4.0, with source URLs in each file header, replacing the previous textbook excerpt. If you reuse the repo, replace them with your own documents or another CC-licensed source, and verify you have the right to publish any file you put in `docs/`.

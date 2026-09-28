@@ -18,8 +18,8 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 CHUNK_SIZE = 800
 CHUNK_OVERLAP = 80
 MIN_SCORE = 0.85
-RAW_DENSE_FLOOR = 0.2
-RAW_BM25_FLOOR = 1.0
+RAW_DENSE_FLOOR = 0.25
+RAW_BM25_FLOOR = 0.3
 DOCS_DIR = Path("docs")
 # simple in-memory rate limit: 20 requests per 60s per IP on /ask
 _RATE_LIMIT = int(os.getenv("RATE_LIMIT_PER_MINUTE", "20"))

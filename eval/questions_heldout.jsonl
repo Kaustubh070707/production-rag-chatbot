@@ -1,11 +1,11 @@
-{"question": "What did Suyya do to the Vitasta river?", "must_contain": "Vitasta", "answerable": true}
-{"question": "Who is credited with draining the Wular lake area?", "must_contain": "Suyya", "answerable": true}
-{"question": "Which pallava structure is mentioned as Kaveri Anicut?", "must_contain": "Kaveri", "answerable": true}
-{"question": "What invention is linked to Guddasetu?", "must_contain": "Guddasetu", "answerable": true}
-{"question": "Which temple style groups are Nagara and Dravida?", "must_contain": "Nagara", "answerable": true}
-{"question": "What architectural element is a stupa's harmika?", "must_contain": "harmika", "answerable": true}
-{"question": "Which scientist wrote Siddhanta Shiromani?", "must_contain": "Bhaskaracharya", "answerable": true}
-{"question": "What is the stock price of Reliance on NSE today?", "must_contain": "", "answerable": false}
+{"question": "Near which modern city is Kusumapura?", "must_contain": "Patna", "answerable": true}
+{"question": "What observatory did Aryabhata reportedly set up?", "must_contain": "Taregana", "answerable": true}
+{"question": "Whose writings preserved the Arya-siddhanta?", "must_contain": "Varahamihira", "answerable": true}
+{"question": "What was Brahmagupta's position at Ujjain?", "must_contain": "Ujjain observatory", "answerable": true}
+{"question": "What did Al-Khwarizmi's book spread westward?", "must_contain": "decimal", "answerable": true}
+{"question": "How heavy is the Delhi iron pillar?", "must_contain": "six tonnes", "answerable": true}
+{"question": "Where does the iron pillar stand today?", "must_contain": "Qutb complex", "answerable": true}
+{"question": "What is the stock price of Reliance today?", "must_contain": "", "answerable": false}
 {"question": "Summarize the latest IPL match result", "must_contain": "", "answerable": false}
 {"question": "What is the weather in Mumbai right now?", "must_contain": "", "answerable": false}
 {"question": "Explain how to file GST return step by step", "must_contain": "", "answerable": false}

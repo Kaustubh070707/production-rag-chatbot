@@ -12,7 +12,7 @@ def load_chunks():
         chunks.extend(chunk_text(t, size=800, overlap=80))
     return chunks
 
-def run_eval(alpha=0.5, dense_floor=0.2, bm25_floor=1.0, hybrid_min=0.85):
+def run_eval(alpha=0.5, dense_floor=0.25, bm25_floor=0.3, hybrid_min=0.85):
     texts = load_chunks()
     ok = total = ans_ok = ans_tot = ref_ok = ref_tot = 0
     fails = []
