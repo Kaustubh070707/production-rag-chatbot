@@ -38,7 +38,7 @@ def run_eval(min_score):
                 fails.append((q["question"], top))
     return ok, total, ans_ok, ans_tot, ref_ok, ref_tot, fails
 
-for ms in [0.5, 1.0, 1.5]:
+for ms in [0.3, 0.5, 1.0]:
     ok, total, a_ok, a_tot, r_ok, r_tot, fails = run_eval(ms)
     print(f"MIN={ms}: HIT {ok}/{total} ({ok/total:.0%}) ans={a_ok}/{a_tot} ref={r_ok}/{r_tot}")
     for q, s in fails[:8]:

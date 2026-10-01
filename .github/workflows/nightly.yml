@@ -18,8 +18,9 @@ jobs:
           python-version: "3.12"
           cache: "pip"
       - run: pip install -r requirements-dev.txt
-      - run: ruff check app/ && pytest -q -p no:cacheprovider
-      - name: BM25 eval (no API key needed)
+      - run: ruff check app/
+      - run: pytest -q
+      - name: BM25 eval (no API key needed, sweep includes production floor 0.3)
         env:
           PYTHONPATH: .
         run: |
