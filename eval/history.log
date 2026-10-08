@@ -142,3 +142,21 @@ MIN=1.0: HIT 25/30 (83%) ans=19/20 ref=6/10
   FAIL 1.52 'When was Taj Mahal built?'
   FAIL 2.05 'What is iPhone price in India?'
   FAIL 3.31 'Best pizza in Delhi?'
+## 2026-10-08
+MIN=0.3: HIT 26/30 (87%) ans=20/20 ref=6/10
+  FAIL 1.57 'Who won cricket World Cup 2023?'
+  FAIL 1.52 'When was Taj Mahal built?'
+  FAIL 2.05 'What is iPhone price in India?'
+  FAIL 3.31 'Best pizza in Delhi?'
+MIN=0.5: HIT 25/30 (83%) ans=19/20 ref=6/10
+  FAIL 0.38 'Who was Aryabhata?'
+  FAIL 1.57 'Who won cricket World Cup 2023?'
+  FAIL 1.52 'When was Taj Mahal built?'
+  FAIL 2.05 'What is iPhone price in India?'
+  FAIL 3.31 'Best pizza in Delhi?'
+MIN=1.0: HIT 25/30 (83%) ans=19/20 ref=6/10
+  FAIL 0.38 'Who was Aryabhata?'
+  FAIL 1.57 'Who won cricket World Cup 2023?'
+  FAIL 1.52 'When was Taj Mahal built?'
+  FAIL 2.05 'What is iPhone price in India?'
+  FAIL 3.31 'Best pizza in Delhi?'
